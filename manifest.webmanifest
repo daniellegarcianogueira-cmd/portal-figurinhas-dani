@@ -1,0 +1,36 @@
+{
+  "name": "Bonequinhas da Dani – Figurinhas",
+  "short_name": "Figurinhas Dani",
+  "description": "Portal oficial de figurinhas da comunidade Bonequinhas da Dani. Envie, copie e compartilhe suas figurinhas favoritas!",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#1a0a2e",
+  "theme_color": "#c026d3",
+  "lang": "pt-BR",
+  "categories": ["lifestyle", "social", "entertainment"],
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Adicionar Figurinha",
+      "short_name": "Adicionar",
+      "description": "Envie uma nova figurinha para a galeria",
+      "url": "./index.html?action=add",
+      "icons": [{ "src": "./icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

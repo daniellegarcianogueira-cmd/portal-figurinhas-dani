@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#c026d3" />
+  <meta name="description" content="Portal oficial de figurinhas da comunidade Bonequinhas da Dani. Envie, copie e compartilhe suas figurinhas favoritas!" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Figurinhas Dani" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Bonequinhas da Dani – Figurinhas" />
+  <meta property="og:description" content="Portal oficial de figurinhas da comunidade. Envie e compartilhe!" />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="./icons/icon-512.png" />
+
+  <title>Bonequinhas da Dani – Portal de Figurinhas</title>
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="./manifest.webmanifest" />
+
+  <!-- Apple Touch Icon -->
+  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+
+  <!-- ── Offline Banner ─────────────────────────────────────── -->
+  <div class="offline-banner" id="offlineBanner">
+    📵 Você está offline. As figurinhas em cache continuam disponíveis.
+  </div>
+
+  <!-- ── Header ─────────────────────────────────────────────── -->
+  <header class="header">
+    <div class="header-inner">
+      <a href="./index.html" class="logo" aria-label="Bonequinhas da Dani">
+        <span class="logo-emoji">🎀</span>
+        <span class="logo-text">
+          <span class="logo-title">Bonequinhas da Dani</span>
+          <span class="logo-sub">Portal de Figurinhas</span>
+        </span>
+      </a>
+
+      <div class="header-actions">
+        <span class="sticker-count" id="stickerCount">Carregando…</span>
+        <button class="btn btn-primary" id="btnOpenModal" aria-label="Adicionar figurinha">
+          ✨ Adicionar Figurinha
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Main ───────────────────────────────────────────────── -->
+  <main>
+
+    <!-- Hero -->
+    <section class="hero container">
+      <h1 class="hero-title">✨ Figurinhas da Comunidade</h1>
+      <p class="hero-sub">Copie, compartilhe e envie suas figurinhas favoritas para o Instagram!</p>
+    </section>
+
+    <!-- Controles -->
+    <section class="container">
+      <div class="controls">
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input
+            type="search"
+            class="search-input"
+            id="searchInput"
+            placeholder="Buscar por nome ou legenda…"
+            aria-label="Buscar figurinhas"
+            autocomplete="off"
+          />
+        </div>
+
+        <select class="filter-select" id="categoryFilter" aria-label="Filtrar por categoria">
+          <option value="">Todas as categorias</option>
+        </select>
+
+        <select class="filter-select" id="sortSelect" aria-label="Ordenar">
+          <option value="newest">Mais recentes</option>
+          <option value="oldest">Mais antigas</option>
+          <option value="title">A–Z</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- Grid de figurinhas -->
+    <section class="stickers-section container">
+      <div class="grid" id="stickersGrid" role="list" aria-label="Galeria de figurinhas">
+        <!-- Preenchido dinamicamente por app.js -->
+        <div class="loading-spinner" id="loadingSpinner">
+          <div class="spinner"></div>
+          <span>Carregando figurinhas…</span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ── Footer ─────────────────────────────────────────────── -->
+  <footer class="footer">
+    <p>
+      🎀 <strong>Bonequinhas da Dani</strong> &mdash; Portal Oficial de Figurinhas<br />
+      Feito com 💜 para a comunidade &bull;
+      <a href="https://github.com" target="_blank" rel="noopener">GitHub Pages</a>
+    </p>
+  </footer>
+
+  <!-- ── Modal: Adicionar Figurinha ─────────────────────────── -->
+  <div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalTitle">✨ Adicionar Figurinha</h2>
+        <button class="modal-close" id="btnCloseModal" aria-label="Fechar modal">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <form id="uploadForm" novalidate>
+
+          <!-- Upload de imagem -->
+          <div class="form-group">
+            <label class="form-label" for="fileInput">
+              Imagem <span class="required">*</span>
+            </label>
+            <div class="upload-area" id="uploadArea">
+              <input
+                type="file"
+                id="fileInput"
+                accept="image/png,image/webp"
+                aria-label="Selecionar imagem PNG ou WebP"
+              />
+              <div id="uploadPlaceholder">
+                <div class="upload-icon">🖼️</div>
+                <p class="upload-text">Clique ou arraste sua imagem aqui</p>
+                <p class="upload-hint">PNG ou WebP · Máximo 4 MB</p>
+              </div>
+              <div class="upload-preview" id="uploadPreview">
+                <img id="previewImg" src="" alt="Pré-visualização da figurinha" />
+                <button type="button" class="remove-preview" id="btnRemovePreview" aria-label="Remover imagem">✕</button>
+              </div>
+            </div>
+            <p class="form-hint error-msg" id="fileError" style="display:none;"></p>
+          </div>
+
+          <!-- Categoria -->
+          <div class="form-group">
+            <label class="form-label" for="categorySelect">
+              Categoria <span class="required">*</span>
+            </label>
+            <select class="form-select" id="categorySelect" required>
+              <option value="">Selecione uma categoria…</option>
+            </select>
+            <p class="form-hint error-msg" id="categoryError" style="display:none;"></p>
+          </div>
+
+          <!-- Título -->
+          <div class="form-group">
+            <label class="form-label" for="titleInput">Título</label>
+            <input
+              type="text"
+              class="form-input"
+              id="titleInput"
+              placeholder="Ex: Motivação do dia"
+              maxlength="80"
+            />
+          </div>
+
+          <!-- Legenda -->
+          <div class="form-group">
+            <label class="form-label" for="captionInput">Legenda</label>
+            <textarea
+              class="form-textarea"
+              id="captionInput"
+              placeholder="Ex: Você é capaz! 💜"
+              maxlength="200"
+              rows="3"
+            ></textarea>
+          </div>
+
+          <!-- Código da Comunidade -->
+          <div class="form-group">
+            <label class="form-label" for="codeInput">
+              Código da Comunidade <span class="required">*</span>
+            </label>
+            <input
+              type="text"
+              class="form-input"
+              id="codeInput"
+              placeholder="Digite o código secreto"
+              autocomplete="off"
+              required
+            />
+            <p class="form-hint">Somente membros da comunidade podem enviar figurinhas.</p>
+            <p class="form-hint error-msg" id="codeError" style="display:none;"></p>
+          </div>
+
+          <!-- Barra de progresso -->
+          <div class="upload-progress" id="uploadProgress">
+            <div class="progress-bar-wrap">
+              <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <p class="progress-text" id="progressText">Enviando…</p>
+          </div>
+
+          <!-- Botão de envio -->
+          <button type="submit" class="btn btn-primary" id="btnSubmit" style="width:100%; margin-top:0.5rem;">
+            🚀 Enviar Figurinha
+          </button>
+
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Lightbox ────────────────────────────────────────────── -->
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Visualizar figurinha">
+    <button class="lightbox-close" id="lightboxClose" aria-label="Fechar">✕</button>
+    <img id="lightboxImg" src="" alt="Figurinha em tamanho completo" />
+  </div>
+
+  <!-- ── Toast container ─────────────────────────────────────── -->
+  <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="false"></div>
+
+  <!-- ── Scripts ─────────────────────────────────────────────── -->
+  <!-- Supabase SDK via CDN (sem Node, sem build) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+  <!-- Configuração (substitua os valores antes de publicar) -->
+  <script src="./config.js"></script>
+
+  <!-- Aplicação principal -->
+  <script src="./app.js"></script>
+
+</body>
+</html>
