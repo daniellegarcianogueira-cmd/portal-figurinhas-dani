@@ -4,8 +4,8 @@
 //  do seu projeto Supabase antes de publicar no GitHub Pages.
 // ============================================================
 
-const SUPABASE_URL  = 'https://SEU_PROJECT_ID.supabase.co';
-const SUPABASE_ANON_KEY = 'SUA_ANON_KEY_AQUI';
+const SUPABASE_URL  = 'https://unajvsjvqskdfxlyicll.supabase.co
+const SUPABASE_ANON_KEY = 'sb_publishable_o0oHhdabn3IJiYABpS7zFw__oGRWw4b';
 
 // Código secreto que as alunas precisam digitar para enviar figurinhas.
 // Troque para o código que você quiser usar na sua comunidade.
