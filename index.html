@@ -238,6 +238,71 @@
 
   <!-- Aplicação principal -->
   <script src="./app.js"></script>
+<!-- ── Modal: Adicionar Figurinha ───────────────────────── -->
+  <div class="modal-overlay" id="modalOverlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Adicionar figurinha">
+      <div class="modal-header">
+        <h2>✨ Adicionar Figurinha</h2>
+        <button class="btn btn-ghost" id="btnCloseModal" type="button" aria-label="Fechar">✖</button>
+      </div>
+
+      <form class="modal-body" id="uploadForm">
+        <label class="label">Código da comunidade</label>
+        <input class="input" id="codeInput" type="text" placeholder="Digite o código" />
+
+        <label class="label">Categoria</label>
+        <select class="input" id="categorySelect"></select>
+
+        <label class="label">Título (opcional)</label>
+        <input class="input" id="titleInput" type="text" placeholder="Ex: Bom dia" />
+
+        <label class="label">Legenda (opcional)</label>
+        <textarea class="input" id="captionInput" rows="3" placeholder="Ex: Deus abençoe seu dia!"></textarea>
+
+        <label class="label">Arquivo (PNG ou WebP)</label>
+
+        <div class="upload-area" id="uploadArea" role="button" tabindex="0">
+          <div id="uploadPlaceholder">
+            <p><strong>Toque para escolher</strong> ou arraste o arquivo aqui</p>
+            <p class="muted">PNG ou WebP • até 4MB</p>
+          </div>
+
+          <input id="fileInput" type="file" accept="image/png,image/webp" hidden />
+
+          <div id="uploadPreview" style="display:none;">
+            <img id="previewImg" alt="Pré-visualização" />
+            <button class="btn btn-ghost" id="btnRemovePreview" type="button">Remover</button>
+          </div>
+        </div>
+
+        <div class="progress" id="uploadProgress" style="display:none;">
+          <div class="progress-bar" id="progressBar" style="width:0%;"></div>
+          <p class="muted" id="progressText">Enviando…</p>
+        </div>
+
+        <button class="btn btn-primary" id="btnSubmit" type="submit">
+          Enviar Figurinha
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── Lightbox ─────────────────────────────────────────── -->
+  <div class="lightbox" id="lightbox" aria-hidden="true">
+    <button class="lightbox-close" id="lightboxClose" aria-label="Fechar">✖</button>
+    <img id="lightboxImg" alt="Figurinha ampliada" />
+  </div>
+
+  <!-- ── Toast container ───────────────────────────────────── -->
+  <div class="toast-container" id="toastContainer"></div>
+</body>
+</html>
+<!-- ── Toast container ───────────────────────────────────── -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./config.js"></script>
+<script src="./app.js"></script>
 
 </body>
 </html>
