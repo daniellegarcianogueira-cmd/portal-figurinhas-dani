@@ -4,7 +4,7 @@
 //  Cache-first para assets estáticos.
 // ============================================================
 
-const CACHE_VERSION  = 'v1.0.0';
+const CACHE_VERSION  = 'v1.0.1';
 const STATIC_CACHE   = `bonequinhas-static-${CACHE_VERSION}`;
 const DYNAMIC_CACHE  = `bonequinhas-dynamic-${CACHE_VERSION}`;
 
@@ -16,8 +16,8 @@ const STATIC_ASSETS = [
   './app.js',
   './config.js',
   './manifest.webmanifest',
-  './icons/icon-192.png',
-  './icons/icon-512.png',
+  './icon-192.png',
+  './icon-512.png',
 ];
 
 // ──────────────────────────────────────────────
@@ -25,8 +25,15 @@ const STATIC_ASSETS = [
 // ──────────────────────────────────────────────
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(STATIC_CACHE).then((cache) => {
-      return cache.addAll(STATIC_ASSETS);
+    caches.open(STATIC_CACHE).then(async (cache) => {
+      // Tenta adicionar cada asset individualmente para evitar que um erro 404 quebre todo o cache
+      for (const asset of STATIC_ASSETS) {
+        try {
+          await cache.add(asset);
+        } catch (err) {
+          console.warn(`[SW] Falha ao cachear asset: ${asset}`, err);
+        }
+      }
     }).then(() => self.skipWaiting())
   );
 });
@@ -96,10 +103,14 @@ self.addEventListener('fetch', (event) => {
 //  Utilitário: busca e armazena no cache
 // ──────────────────────────────────────────────
 async function fetchAndCache(request, cacheName) {
-  const response = await fetch(request);
-  if (response && response.status === 200) {
-    const cache = await caches.open(cacheName);
-    cache.put(request, response.clone());
+  try {
+    const response = await fetch(request);
+    if (response && response.status === 200) {
+      const cache = await caches.open(cacheName);
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch (err) {
+    return caches.match(request);
   }
-  return response;
 }
