@@ -7,6 +7,28 @@
 
 'use strict';
 
+// ── ✅ CONFIGURAÇÃO DO STORAGE (CORRIGIDO) ────────────────────
+const STORAGE_BUCKET = 'stickers';   // ✅ nome REAL do bucket no Supabase (do seu print)
+const STORAGE_FOLDER = 'public';     // ✅ pasta onde os arquivos ficam
+
+// ── ✅ CONFIG GERAL (SE VOCÊ JÁ TEM ISSO EM OUTRO ARQUIVO, PODE REMOVER DAQUI) ──
+const SUPABASE_URL = window.SUPABASE_URL || 'COLE_AQUI_SUA_SUPABASE_URL';
+const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || 'COLE_AQUI_SUA_ANON_KEY';
+
+// Categorias (ajuste como quiser)
+const CATEGORIES = window.CATEGORIES || [
+  'Bom dia',
+  'Boa noite',
+  'Fé',
+  'Propósito',
+  'Motivação',
+  'Versículos',
+  'Outros',
+];
+
+// Limite de arquivo (4 MB)
+const MAX_FILE_SIZE = window.MAX_FILE_SIZE || (4 * 1024 * 1024);
+
 // ── 1. Inicialização do Supabase ─────────────────────────────
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -24,35 +46,35 @@ const state = {
 // ── 3. Referências DOM ───────────────────────────────────────
 const $ = (id) => document.getElementById(id);
 
-const grid           = $('stickersGrid');
-const loadingSpinner = $('loadingSpinner');
-const stickerCount   = $('stickerCount');
-const searchInput    = $('searchInput');
-const categoryFilter = $('categoryFilter');
-const sortSelect     = $('sortSelect');
-const modalOverlay   = $('modalOverlay');
-const btnOpenModal   = $('btnOpenModal');
-const btnCloseModal  = $('btnCloseModal');
-const uploadForm     = $('uploadForm');
-const fileInput      = $('fileInput');
-const uploadArea     = $('uploadArea');
+const grid              = $('stickersGrid');
+const loadingSpinner    = $('loadingSpinner');
+const stickerCount      = $('stickerCount');
+const searchInput       = $('searchInput');
+const categoryFilter    = $('categoryFilter');
+const sortSelect        = $('sortSelect');
+const modalOverlay      = $('modalOverlay');
+const btnOpenModal      = $('btnOpenModal');
+const btnCloseModal     = $('btnCloseModal');
+const uploadForm        = $('uploadForm');
+const fileInput         = $('fileInput');
+const uploadArea        = $('uploadArea');
 const uploadPlaceholder = $('uploadPlaceholder');
-const uploadPreview  = $('uploadPreview');
-const previewImg     = $('previewImg');
-const btnRemovePreview = $('btnRemovePreview');
-const categorySelect = $('categorySelect');
-const titleInput     = $('titleInput');
-const captionInput   = $('captionInput');
-const codeInput      = $('codeInput');
-const btnSubmit      = $('btnSubmit');
-const uploadProgress = $('uploadProgress');
-const progressBar    = $('progressBar');
-const progressText   = $('progressText');
-const lightbox       = $('lightbox');
-const lightboxImg    = $('lightboxImg');
-const lightboxClose  = $('lightboxClose');
-const toastContainer = $('toastContainer');
-const offlineBanner  = $('offlineBanner');
+const uploadPreview     = $('uploadPreview');
+const previewImg        = $('previewImg');
+const btnRemovePreview  = $('btnRemovePreview');
+const categorySelect    = $('categorySelect');
+const titleInput        = $('titleInput');
+const captionInput      = $('captionInput');
+const codeInput         = $('codeInput');
+const btnSubmit         = $('btnSubmit');
+const uploadProgress    = $('uploadProgress');
+const progressBar       = $('progressBar');
+const progressText      = $('progressText');
+const lightbox          = $('lightbox');
+const lightboxImg       = $('lightboxImg');
+const lightboxClose     = $('lightboxClose');
+const toastContainer    = $('toastContainer');
+const offlineBanner     = $('offlineBanner');
 
 // ── 4. Toast Notifications ───────────────────────────────────
 function showToast(message, type = 'info', duration = 4000) {
@@ -82,13 +104,10 @@ if ('serviceWorker' in navigator) {
 
 // ── 6. Detecção de conexão ───────────────────────────────────
 function updateOnlineStatus() {
-  if (!navigator.onLine) {
-    offlineBanner.classList.add('show');
-  } else {
-    offlineBanner.classList.remove('show');
-  }
+  if (!navigator.onLine) offlineBanner.classList.add('show');
+  else offlineBanner.classList.remove('show');
 }
-window.addEventListener('online',  updateOnlineStatus);
+window.addEventListener('online', updateOnlineStatus);
 window.addEventListener('offline', updateOnlineStatus);
 updateOnlineStatus();
 
@@ -146,7 +165,7 @@ function applyFilters() {
   if (state.searchQuery) {
     const q = state.searchQuery.toLowerCase();
     list = list.filter((s) =>
-      (s.title   || '').toLowerCase().includes(q) ||
+      (s.title || '').toLowerCase().includes(q) ||
       (s.caption || '').toLowerCase().includes(q) ||
       (s.category || '').toLowerCase().includes(q)
     );
@@ -195,9 +214,7 @@ function renderGrid() {
   }
 
   const fragment = document.createDocumentFragment();
-  state.filtered.forEach((sticker) => {
-    fragment.appendChild(createCard(sticker));
-  });
+  state.filtered.forEach((sticker) => fragment.appendChild(createCard(sticker)));
   grid.appendChild(fragment);
 }
 
@@ -223,10 +240,10 @@ function createCard(sticker) {
     day: '2-digit', month: 'short', year: 'numeric',
   });
 
-  const title   = escapeHtml(sticker.title   || '');
-  const caption = escapeHtml(sticker.caption || '');
+  const title    = escapeHtml(sticker.title || '');
+  const caption  = escapeHtml(sticker.caption || '');
   const category = escapeHtml(sticker.category || '');
-  const imgUrl  = sticker.image_url;
+  const imgUrl   = sticker.image_url;
 
   card.innerHTML = `
     <div class="card-img-wrap" title="Clique para ampliar">
@@ -239,7 +256,7 @@ function createCard(sticker) {
       ${category ? `<span class="card-category-badge">${category}</span>` : ''}
     </div>
     <div class="card-body">
-      ${title   ? `<p class="card-title">${title}</p>` : ''}
+      ${title ? `<p class="card-title">${title}</p>` : ''}
       ${caption ? `<p class="card-caption">${caption}</p>` : ''}
       <p class="card-date">📅 ${date}</p>
     </div>
@@ -278,13 +295,13 @@ async function handleCardAction(e) {
 
   const action  = btn.dataset.action;
   const url     = btn.dataset.url;
-  const title   = btn.dataset.title   || 'Figurinha';
+  const title   = btn.dataset.title || 'Figurinha';
   const caption = btn.dataset.caption || '';
 
   switch (action) {
     case 'copy-sticker':  await copySticker(url, btn);  break;
-    case 'copy-caption':  copyCaption(caption);          break;
-    case 'save':          saveImage(url, title);         break;
+    case 'copy-caption':  copyCaption(caption);         break;
+    case 'save':          saveImage(url, title);        break;
     case 'share':         shareSticker(url, title, caption); break;
     case 'open':          window.open(url, '_blank', 'noopener'); break;
   }
@@ -363,7 +380,7 @@ function convertToPng(blob) {
     const url = URL.createObjectURL(blob);
     img.onload = () => {
       const canvas = document.createElement('canvas');
-      canvas.width  = img.naturalWidth;
+      canvas.width = img.naturalWidth;
       canvas.height = img.naturalHeight;
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0);
@@ -392,7 +409,7 @@ async function copyCaption(text) {
     const ta = document.createElement('textarea');
     ta.value = text;
     ta.style.position = 'fixed';
-    ta.style.opacity  = '0';
+    ta.style.opacity = '0';
     document.body.appendChild(ta);
     ta.select();
     document.execCommand('copy');
@@ -406,9 +423,9 @@ async function saveImage(url, title) {
   try {
     const response = await fetch(url);
     const blob = await response.blob();
-    const ext  = blob.type === 'image/webp' ? 'webp' : 'png';
-    const a    = document.createElement('a');
-    a.href     = URL.createObjectURL(blob);
+    const ext = blob.type === 'image/webp' ? 'webp' : 'png';
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
     a.download = `${sanitizeFilename(title)}.${ext}`;
     document.body.appendChild(a);
     a.click();
@@ -417,7 +434,6 @@ async function saveImage(url, title) {
     showToast('💾 Figurinha salva!', 'success');
   } catch (err) {
     console.error('[Save]', err);
-    // Fallback: abre em nova aba
     window.open(url, '_blank', 'noopener');
     showToast('Abrindo imagem em nova aba para salvar manualmente.', 'info');
   }
@@ -427,10 +443,9 @@ async function saveImage(url, title) {
 async function shareSticker(url, title, caption) {
   if (navigator.share) {
     try {
-      // Tenta compartilhar o arquivo diretamente
       const response = await fetch(url);
       const blob = await response.blob();
-      const ext  = blob.type === 'image/webp' ? 'webp' : 'png';
+      const ext = blob.type === 'image/webp' ? 'webp' : 'png';
       const file = new File([blob], `${sanitizeFilename(title || 'figurinha')}.${ext}`, { type: blob.type });
 
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -440,7 +455,6 @@ async function shareSticker(url, title, caption) {
           files: [file],
         });
       } else {
-        // Compartilha só o link
         await navigator.share({
           title: title || 'Figurinha Bonequinhas da Dani',
           text: caption || 'Confira essa figurinha! 🎀',
@@ -453,7 +467,6 @@ async function shareSticker(url, title, caption) {
       }
     }
   } else {
-    // Fallback: copia URL
     await copyCaption(url);
     showToast('🔗 Link da figurinha copiado! Cole onde quiser.', 'success');
   }
@@ -465,13 +478,11 @@ function openLightbox(url) {
   lightbox.classList.add('active');
   document.body.style.overflow = 'hidden';
 }
-
 function closeLightbox() {
   lightbox.classList.remove('active');
   lightboxImg.src = '';
   document.body.style.overflow = '';
 }
-
 lightboxClose.addEventListener('click', closeLightbox);
 lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLightbox(); });
@@ -480,18 +491,16 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLight
 function openModal() {
   modalOverlay.classList.add('active');
   document.body.style.overflow = 'hidden';
-  codeInput.focus();
+  codeInput && codeInput.focus();
 }
-
 function closeModal() {
   modalOverlay.classList.remove('active');
   document.body.style.overflow = '';
   resetForm();
 }
-
-btnOpenModal.addEventListener('click', openModal);
-btnCloseModal.addEventListener('click', closeModal);
-modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModal(); });
+btnOpenModal && btnOpenModal.addEventListener('click', openModal);
+btnCloseModal && btnCloseModal.addEventListener('click', closeModal);
+modalOverlay && modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModal(); });
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
 
 // Abre modal via URL param ?action=add
@@ -500,24 +509,24 @@ if (new URLSearchParams(location.search).get('action') === 'add') {
 }
 
 // ── 19. Upload: drag & drop e preview ────────────────────────
-uploadArea.addEventListener('click', () => fileInput.click());
-uploadArea.addEventListener('dragover', (e) => {
+uploadArea && uploadArea.addEventListener('click', () => fileInput.click());
+uploadArea && uploadArea.addEventListener('dragover', (e) => {
   e.preventDefault();
   uploadArea.classList.add('dragover');
 });
-uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
-uploadArea.addEventListener('drop', (e) => {
+uploadArea && uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+uploadArea && uploadArea.addEventListener('drop', (e) => {
   e.preventDefault();
   uploadArea.classList.remove('dragover');
   const file = e.dataTransfer.files[0];
   if (file) handleFileSelect(file);
 });
 
-fileInput.addEventListener('change', () => {
+fileInput && fileInput.addEventListener('change', () => {
   if (fileInput.files[0]) handleFileSelect(fileInput.files[0]);
 });
 
-btnRemovePreview.addEventListener('click', (e) => {
+btnRemovePreview && btnRemovePreview.addEventListener('click', (e) => {
   e.stopPropagation();
   clearFilePreview();
 });
@@ -563,7 +572,7 @@ function clearFilePreview() {
 }
 
 // ── 20. Submissão do formulário ──────────────────────────────
-uploadForm.addEventListener('submit', async (e) => {
+uploadForm && uploadForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   if (!validateForm()) return;
 
@@ -576,7 +585,9 @@ uploadForm.addEventListener('submit', async (e) => {
     // 20.1 Gerar nome único para o arquivo
     const ext      = state.selectedFile.type === 'image/webp' ? 'webp' : 'png';
     const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-    const path     = `public/${filename}`;
+
+    // ✅ CORRIGIDO: bucket/pasta corretos
+    const path     = `${STORAGE_FOLDER}/${filename}`;
 
     setProgress(30, 'Enviando imagem…');
 
@@ -620,142 +631,106 @@ uploadForm.addEventListener('submit', async (e) => {
     showToast('🎉 Figurinha enviada com sucesso! Ela já aparece na galeria.', 'success', 5000);
     closeModal();
 
-    // Recarrega a galeria
+    // ✅ CORRIGIDO: no seu trecho estava truncado
     await loadStickers();
 
   } catch (err) {
     console.error('[Upload] Erro:', err);
-    let msg = 'Erro ao enviar figurinha. Tente novamente.';
-    if (err.message?.includes('Bucket not found')) {
-      msg = 'Bucket "stickers" não encontrado. Verifique a configuração do Supabase.';
-    } else if (err.message?.includes('row-level security')) {
-      msg = 'Permissão negada. Verifique as policies RLS no Supabase.';
-    } else if (err.message?.includes('duplicate')) {
-      msg = 'Já existe um arquivo com esse nome. Tente novamente.';
-    }
-    showToast(msg, 'error', 7000);
+    showToast(`❌ Erro ao enviar: ${err?.message || err}`, 'error', 8000);
   } finally {
     btnSubmit.disabled = false;
-    btnSubmit.innerHTML = '🚀 Enviar Figurinha';
+    btnSubmit.innerHTML = 'Enviar';
     uploadProgress.style.display = 'none';
-    setProgress(0, '');
   }
 });
 
+// ── 21. Inputs de filtro/busca ───────────────────────────────
+searchInput && searchInput.addEventListener('input', (e) => {
+  state.searchQuery = e.target.value || '';
+  applyFilters();
+});
+categoryFilter && categoryFilter.addEventListener('change', (e) => {
+  state.categoryFilter = e.target.value || '';
+  applyFilters();
+});
+sortSelect && sortSelect.addEventListener('change', (e) => {
+  state.sortOrder = e.target.value || 'newest';
+  applyFilters();
+});
+
+// ── 22. Helpers/Utilitários ──────────────────────────────────
 function setProgress(percent, text) {
-  progressBar.style.width = `${percent}%`;
-  progressText.textContent = text;
+  if (progressBar) progressBar.style.width = `${percent}%`;
+  if (progressText) progressText.textContent = text || '';
 }
 
-// ── 21. Validação do formulário ──────────────────────────────
-function validateForm() {
-  let valid = true;
+function resetForm() {
+  clearFilePreview();
+  if (categorySelect) categorySelect.value = CATEGORIES[0] || '';
+  if (titleInput) titleInput.value = '';
+  if (captionInput) captionInput.value = '';
+  clearFieldError('fileError');
+  clearFieldError('categoryError');
+  clearFieldError('titleError');
+  clearFieldError('captionError');
+}
 
-  // Arquivo
+function validateForm() {
+  let ok = true;
+
   if (!state.selectedFile) {
-    showFieldError('fileError', 'Selecione uma imagem PNG ou WebP.');
-    valid = false;
+    showFieldError('fileError', 'Escolha uma imagem PNG ou WebP antes de enviar.');
+    ok = false;
   } else {
     clearFieldError('fileError');
   }
 
-  // Categoria
-  if (!categorySelect.value) {
+  if (!categorySelect || !categorySelect.value) {
     showFieldError('categoryError', 'Selecione uma categoria.');
-    categorySelect.classList.add('error');
-    valid = false;
+    ok = false;
   } else {
     clearFieldError('categoryError');
-    categorySelect.classList.remove('error');
   }
 
-  // Código da comunidade
-  const code = codeInput.value.trim().toUpperCase();
-  if (!code) {
-    showFieldError('codeError', 'Digite o código da comunidade.');
-    codeInput.classList.add('error');
-    valid = false;
-  } else if (code !== COMMUNITY_CODE.toUpperCase()) {
-    showFieldError('codeError', '❌ Código incorreto. Verifique com a Dani.');
-    codeInput.classList.add('error');
-    valid = false;
-  } else {
-    clearFieldError('codeError');
-    codeInput.classList.remove('error');
-  }
-
-  return valid;
+  return ok;
 }
 
 function showFieldError(id, msg) {
   const el = $(id);
-  if (el) { el.textContent = msg; el.style.display = 'block'; }
+  if (!el) return;
+  el.textContent = msg;
+  el.style.display = 'block';
 }
-
 function clearFieldError(id) {
   const el = $(id);
-  if (el) { el.textContent = ''; el.style.display = 'none'; }
-}
-
-function resetForm() {
-  uploadForm.reset();
-  clearFilePreview();
-  clearFieldError('fileError');
-  clearFieldError('categoryError');
-  clearFieldError('codeError');
-  categorySelect.classList.remove('error');
-  codeInput.classList.remove('error');
-  state.selectedFile = null;
-}
-
-// ── 22. Eventos de busca e filtros ───────────────────────────
-let searchDebounce;
-searchInput.addEventListener('input', () => {
-  clearTimeout(searchDebounce);
-  searchDebounce = setTimeout(() => {
-    state.searchQuery = searchInput.value.trim();
-    applyFilters();
-  }, 300);
-});
-
-categoryFilter.addEventListener('change', () => {
-  state.categoryFilter = categoryFilter.value;
-  applyFilters();
-});
-
-sortSelect.addEventListener('change', () => {
-  state.sortOrder = sortSelect.value;
-  applyFilters();
-});
-
-// ── 23. Utilitários ──────────────────────────────────────────
-function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
-
-function escapeAttr(str) {
-  return String(str).replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+  if (!el) return;
+  el.textContent = '';
+  el.style.display = 'none';
 }
 
 function sanitizeFilename(name) {
-  return name
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-zA-Z0-9\s-]/g, '')
+  return String(name || 'figurinha')
     .trim()
+    .replace(/[\\/:*?"<>|]/g, '')
     .replace(/\s+/g, '-')
-    .toLowerCase()
-    .slice(0, 50) || 'figurinha';
+    .slice(0, 80) || 'figurinha';
 }
 
-// ── 24. Inicialização ────────────────────────────────────────
-function init() {
+function escapeHtml(str) {
+  return String(str)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+function escapeAttr(str) {
+  return escapeHtml(str).replaceAll('\n', ' ').replaceAll('\r', ' ');
+}
+
+// ── 23. Boot ────────────────────────────────────────────────
+(function boot() {
   populateCategorySelects();
   loadStickers();
-}
-
-document.addEventListener('DOMContentLoaded', init);
+})();
