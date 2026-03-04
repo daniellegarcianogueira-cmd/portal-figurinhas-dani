@@ -7,27 +7,12 @@
 
 'use strict';
 
-// ── ✅ CONFIGURAÇÃO DO STORAGE (CORRIGIDO) ────────────────────
-const STORAGE_BUCKET = 'stickers';   // ✅ nome REAL do bucket no Supabase (do seu print)
-const STORAGE_FOLDER = 'public';     // ✅ pasta onde os arquivos ficam
+// ── ✅ ÚNICA VARIÁVEL EXCLUSIVA DO APP.JS (não está no config.js) ──
+const STORAGE_FOLDER = 'public'; // pasta onde os arquivos ficam no bucket
 
-// ── ✅ CONFIG GERAL (SE VOCÊ JÁ TEM ISSO EM OUTRO ARQUIVO, PODE REMOVER DAQUI) ──
-const SUPABASE_URL = window.SUPABASE_URL || 'COLE_AQUI_SUA_SUPABASE_URL';
-const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || 'COLE_AQUI_SUA_ANON_KEY';
-
-// Categorias (ajuste como quiser)
-const CATEGORIES = window.CATEGORIES || [
-  'Bom dia',
-  'Boa noite',
-  'Fé',
-  'Propósito',
-  'Motivação',
-  'Versículos',
-  'Outros',
-];
-
-// Limite de arquivo (4 MB)
-const MAX_FILE_SIZE = window.MAX_FILE_SIZE || (4 * 1024 * 1024);
+// ⚠️ ATENÇÃO: SUPABASE_URL, SUPABASE_ANON_KEY, STORAGE_BUCKET,
+// CATEGORIES, MAX_FILE_SIZE e COMMUNITY_CODE já estão declarados
+// em config.js (carregado antes deste arquivo). NÃO redeclare aqui!
 
 // ── 1. Inicialização do Supabase ─────────────────────────────
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -576,6 +561,7 @@ uploadForm && uploadForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   if (!validateForm()) return;
 
+  const originalBtnText = btnSubmit.innerHTML;
   btnSubmit.disabled = true;
   btnSubmit.innerHTML = '⏳ Enviando…';
   uploadProgress.style.display = 'block';
@@ -585,8 +571,6 @@ uploadForm && uploadForm.addEventListener('submit', async (e) => {
     // 20.1 Gerar nome único para o arquivo
     const ext      = state.selectedFile.type === 'image/webp' ? 'webp' : 'png';
     const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-
-    // ✅ CORRIGIDO: bucket/pasta corretos
     const path     = `${STORAGE_FOLDER}/${filename}`;
 
     setProgress(30, 'Enviando imagem…');
@@ -630,8 +614,6 @@ uploadForm && uploadForm.addEventListener('submit', async (e) => {
 
     showToast('🎉 Figurinha enviada com sucesso! Ela já aparece na galeria.', 'success', 5000);
     closeModal();
-
-    // ✅ CORRIGIDO: no seu trecho estava truncado
     await loadStickers();
 
   } catch (err) {
@@ -639,8 +621,9 @@ uploadForm && uploadForm.addEventListener('submit', async (e) => {
     showToast(`❌ Erro ao enviar: ${err?.message || err}`, 'error', 8000);
   } finally {
     btnSubmit.disabled = false;
-    btnSubmit.innerHTML = 'Enviar';
+    btnSubmit.innerHTML = originalBtnText; // ✅ restaura o texto original do botão
     uploadProgress.style.display = 'none';
+    setProgress(0, '');
   }
 });
 
@@ -669,15 +652,16 @@ function resetForm() {
   if (categorySelect) categorySelect.value = CATEGORIES[0] || '';
   if (titleInput) titleInput.value = '';
   if (captionInput) captionInput.value = '';
+  if (codeInput) codeInput.value = '';
   clearFieldError('fileError');
   clearFieldError('categoryError');
-  clearFieldError('titleError');
-  clearFieldError('captionError');
+  clearFieldError('codeError');
 }
 
 function validateForm() {
   let ok = true;
 
+  // Valida imagem
   if (!state.selectedFile) {
     showFieldError('fileError', 'Escolha uma imagem PNG ou WebP antes de enviar.');
     ok = false;
@@ -685,11 +669,24 @@ function validateForm() {
     clearFieldError('fileError');
   }
 
+  // Valida categoria
   if (!categorySelect || !categorySelect.value) {
     showFieldError('categoryError', 'Selecione uma categoria.');
     ok = false;
   } else {
     clearFieldError('categoryError');
+  }
+
+  // ✅ CORRIGIDO: Valida o Código da Comunidade
+  const enteredCode = codeInput ? codeInput.value.trim() : '';
+  if (!enteredCode) {
+    showFieldError('codeError', 'Digite o código da comunidade.');
+    ok = false;
+  } else if (enteredCode !== COMMUNITY_CODE) {
+    showFieldError('codeError', '❌ Código incorreto. Verifique e tente novamente.');
+    ok = false;
+  } else {
+    clearFieldError('codeError');
   }
 
   return ok;
@@ -734,3 +731,4 @@ function escapeAttr(str) {
   populateCategorySelects();
   loadStickers();
 })();
+
