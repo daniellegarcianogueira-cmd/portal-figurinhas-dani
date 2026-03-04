@@ -500,6 +500,7 @@ if (new URLSearchParams(location.search).get('action') === 'add') {
 }
 
 // ── 19. Upload: drag & drop e preview ────────────────────────
+uploadArea.addEventListener('click', () => fileInput.click());
 uploadArea.addEventListener('dragover', (e) => {
   e.preventDefault();
   uploadArea.classList.add('dragover');
