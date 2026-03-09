@@ -17,7 +17,7 @@ const STATIC_ASSETS = [
   './config.js',
   './manifest.webmanifest',
   './icon-192.png',
-  './icon-512.png',
+  // './icon-512.png', // REMOVIDO: arquivo não existe no repositório
 ];
 
 // ──────────────────────────────────────────────

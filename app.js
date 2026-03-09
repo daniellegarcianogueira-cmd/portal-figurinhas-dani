@@ -15,7 +15,9 @@ const STORAGE_FOLDER = 'public'; // pasta onde os arquivos ficam no bucket
 // em config.js (carregado antes deste arquivo). NÃO redeclare aqui!
 
 // ── 1. Inicialização do Supabase ─────────────────────────────
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// CORREÇÃO: renomeado de 'supabase' para 'db' para evitar conflito com
+// 'var supabase' declarado pelo SDK UMD (causava SyntaxError no carregamento).
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ── 2. Estado da aplicação ───────────────────────────────────
 const state = {
@@ -121,7 +123,7 @@ async function loadStickers() {
   loadingSpinner.style.display = 'flex';
 
   try {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('stickers')
       .select('*')
       .eq('status', 'public')
@@ -206,10 +208,11 @@ function renderGrid() {
 function renderEmpty(message) {
   const div = document.createElement('div');
   div.className = 'empty-state';
+  // CORREÇÃO: usar escapeHtml para evitar XSS
   div.innerHTML = `
-    <div class="empty-icon">🎀</div>
+    <div class="empty-icon">🎠</div>
     <h3>Nenhuma figurinha aqui</h3>
-    <p>${message}</p>
+    <p>${escapeHtml(message)}</p>
   `;
   grid.appendChild(div);
 }
@@ -470,9 +473,8 @@ function closeLightbox() {
 }
 lightboxClose.addEventListener('click', closeLightbox);
 lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLightbox(); });
 
-// ── 18. Modal ─────────────────────────────────────────────────
+// ── 18. Modal ─────────────────────────────────────────────────────
 function openModal() {
   modalOverlay.classList.add('active');
   document.body.style.overflow = 'hidden';
@@ -486,7 +488,16 @@ function closeModal() {
 btnOpenModal && btnOpenModal.addEventListener('click', openModal);
 btnCloseModal && btnCloseModal.addEventListener('click', closeModal);
 modalOverlay && modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModal(); });
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+// CORREÇÃO: listener único de Escape para evitar conflito entre lightbox e modal
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  if (lightbox.classList.contains('active')) {
+    closeLightbox();
+  } else {
+    closeModal();
+  }
+});
 
 // Abre modal via URL param ?action=add
 if (new URLSearchParams(location.search).get('action') === 'add') {
@@ -576,7 +587,7 @@ uploadForm && uploadForm.addEventListener('submit', async (e) => {
     setProgress(30, 'Enviando imagem…');
 
     // 20.2 Upload para o Supabase Storage
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await db.storage
       .from(STORAGE_BUCKET)
       .upload(path, state.selectedFile, {
         contentType: state.selectedFile.type,
@@ -589,7 +600,7 @@ uploadForm && uploadForm.addEventListener('submit', async (e) => {
     setProgress(65, 'Obtendo URL pública…');
 
     // 20.3 Obter URL pública
-    const { data: urlData } = supabase.storage
+    const { data: urlData } = db.storage
       .from(STORAGE_BUCKET)
       .getPublicUrl(path);
 
@@ -598,7 +609,7 @@ uploadForm && uploadForm.addEventListener('submit', async (e) => {
     setProgress(80, 'Salvando no banco de dados…');
 
     // 20.4 Inserir registro na tabela stickers
-    const { error: dbError } = await supabase
+    const { error: dbError } = await db
       .from('stickers')
       .insert([{
         category:  categorySelect.value,
@@ -649,7 +660,7 @@ function setProgress(percent, text) {
 
 function resetForm() {
   clearFilePreview();
-  if (categorySelect) categorySelect.value = CATEGORIES[0] || '';
+  if (categorySelect) categorySelect.value = ''; // reset para "Selecione uma categoria..."
   if (titleInput) titleInput.value = '';
   if (captionInput) captionInput.value = '';
   if (codeInput) codeInput.value = '';
